@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>birddogs name finder</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f7f6f3;min-height:100vh;padding:24px}
+    .wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+    h1{font-size:22px;font-weight:600;color:#111;text-align:center;margin-bottom:2px}
+    .sub{font-size:13px;color:#999;text-align:center;margin-bottom:8px}
+
+    /* MAIN TABS */
+    .tabs{display:flex;gap:8px;justify-content:center}
+    .tab{padding:9px 22px;border-radius:24px;border:1px solid #e0e0dc;background:#fff;font-size:14px;font-weight:500;color:#555;cursor:pointer;transition:all 0.15s}
+    .tab.active{background:#111;color:#fff;border-color:#111}
+    .hidden{display:none!important}
+
+    /* AI CHAT */
+    .card{background:#fff;border-radius:16px;border:1px solid #e8e8e4;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.05)}
+    .msgs{height:400px;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:10px}
+    .msg{max-width:85%;padding:11px 15px;border-radius:14px;font-size:14px;line-height:1.6}
+    .user{align-self:flex-end;background:#111;color:#fff;border-bottom-right-radius:3px}
+    .bot{align-self:flex-start;background:#f5f5f2;color:#111;border:1px solid #eee;border-bottom-left-radius:3px}
+    .err{align-self:flex-start;background:#fff0f0;color:#c00;border:1px solid #fcc;border-radius:14px;font-size:14px;padding:11px 15px;max-width:85%}
+    .loading{align-self:flex-start;color:#aaa;font-style:italic;font-size:14px;padding:6px 0}
+    .chips{display:flex;flex-wrap:wrap;gap:6px;padding:0 16px 12px}
+    .chip{font-size:12px;padding:5px 11px;border:1px solid #e0e0dc;border-radius:20px;background:#fafaf8;color:#555;cursor:pointer;transition:all 0.15s}
+    .chip:hover{background:#111;color:#fff;border-color:#111}
+    .input-row{display:flex;gap:8px;padding:12px 16px;border-top:1px solid #f0f0ec;background:#fafaf8}
+    .input-row input{flex:1;padding:10px 14px;font-size:14px;border:1px solid #e0e0dc;border-radius:24px;outline:none;color:#111;background:#fff}
+    .input-row input:focus{border-color:#111}
+    .input-row button{padding:10px 20px;background:#111;color:#fff;border:none;border-radius:24px;font-size:14px;font-weight:500;cursor:pointer}
+    .input-row button:disabled{opacity:0.35;cursor:not-allowed}
+
+    /* BROWSE */
+    .browse{display:flex;flex-direction:column;gap:12px}
+    .section-bar{display:flex;gap:8px;flex-wrap:wrap}
+    .section-btn{padding:8px 20px;border-radius:24px;border:1px solid #e0e0dc;background:#fff;font-size:13px;font-weight:600;color:#555;cursor:pointer;transition:all 0.15s}
+    .section-btn.active{background:#111;color:#fff;border-color:#111}
+    .type-bar{display:flex;gap:6px;flex-wrap:wrap}
+    .type-btn{padding:6px 14px;border-radius:20px;border:1px solid #e0e0dc;background:#fafaf8;font-size:12px;color:#555;cursor:pointer;transition:all 0.15s}
+    .type-btn.active{background:#444;color:#fff;border-color:#444}
+    .grid{background:#fff;border-radius:12px;border:1px solid #e8e8e4;overflow:hidden;box-shadow:0 1px 8px rgba(0,0,0,0.04)}
+    .grid-header{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;padding:10px 16px;background:#f5f5f2;border-bottom:1px solid #eee;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:#aaa}
+    .grid-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;padding:10px 16px;border-bottom:1px solid #f5f5f2;transition:background 0.1s}
+    .grid-row:last-child{border-bottom:none}
+    .grid-row:hover{background:#fafaf8}
+    .g-type{font-size:12px;color:#aaa}
+    .g-new{font-size:14px;font-weight:500;color:#111}
+    .g-old{font-size:12px;color:#999;font-style:italic}
+    .grid-body{max-height:460px;overflow-y:auto}
+    .no-results{padding:24px;text-align:center;color:#bbb;font-size:14px}
+
+    footer{margin-top:16px;font-size:11px;color:#ccc;text-align:center;padding-bottom:8px}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🐦 birddogs name finder</h1>
+  <p class="sub">look up old & new product names instantly</p>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('ai',this)">💬 Ask AI</button>
+    <button class="tab" onclick="showTab('browse',this)">📋 Browse</button>
+  </div>
+
+  <!-- AI TAB -->
+  <div id="aiTab" class="card">
+    <div class="msgs" id="msgs">
+      <div class="msg bot">Hey! 👋 Ask me anything about birddogs product names — I'll always tell you the product type, old name, and new name.<br><br>
+      Try: <em>black khaki shorts</em> · <em>what is The Nightcaps?</em> · <em>all supersoft tees</em> · <em>navy polo</em></div>
+    </div>
+    <div class="chips">
+      <span class="chip" onclick="ask('what are black pants called now')">black pants</span>
+      <span class="chip" onclick="ask('show me all supersoft tees')">supersoft tees</span>
+      <span class="chip" onclick="ask('all swim shorts')">swim shorts</span>
+      <span class="chip" onclick="ask('navy gym shorts')">navy gym shorts</span>
+      <span class="chip" onclick="ask('what is The Nightcaps')">The Nightcaps</span>
+      <span class="chip" onclick="ask('show me all polos')">all polos</span>
+      <span class="chip" onclick="ask('gray quarter zip')">gray quarter zip</span>
+      <span class="chip" onclick="ask('all hoodies')">hoodies</span>
+    </div>
+    <div class="input-row">
+      <input id="inp" type="text" placeholder="type a name, color, or product type..."/>
+      <button id="btn" onclick="send()">Ask</button>
+    </div>
+  </div>
+
+  <!-- BROWSE TAB -->
+  <div id="browseTab" class="browse hidden">
+    <div class="section-bar" id="sectionBar">
+      <button class="section-btn active" onclick="setSection('bottoms',this)">👖 Bottoms</button>
+      <button class="section-btn" onclick="setSection('tops',this)">👕 Tops</button>
+    </div>
+    <div class="type-bar" id="typeBar"></div>
+    <div class="grid">
+      <div class="grid-header">
+        <span>Product Type</span>
+        <span>New Name</span>
+        <span>Previous Name</span>
+      </div>
+      <div class="grid-body" id="gridBody"></div>
+    </div>
+  </div>
+</div>
+<footer>powered by birddogs &amp; claude ai</footer>
+
+<script>
+const DB = {
+  bottoms: {
+    "3-in-1 Khaki Shorts": [
+      {n:"The No Metric System",o:"—"},{n:"The Catalina Wind Mixer",o:"—"},{n:"The Roppongi Rockstars",o:"—"},{n:"Osmunda the Great",o:"—"},{n:"Tight Lotus",o:"—"},{n:"The Capital Bloomers",o:"—"},{n:"The Stephen's Talkhouse",o:"—"},{n:"Summer in a Shorts Bottle",o:"—"},
+      {n:"The Chapel Thrills",o:"Khaki Shorts - Baby Blue"},{n:"The Island Apertifs",o:"Khaki Shorts - Beach Glass"},{n:"The Ray Finkles",o:"Khaki Shorts - Bermuda Blue"},{n:"The Nightcaps",o:"Khaki Shorts - Black"},{n:"The Redlines",o:"Khaki Shorts - Cranberry"},{n:"The Free Plays",o:"Khaki Shorts - Dark Gray"},{n:"The Frank the Tanks",o:"Khaki Shorts - Dark Green"},{n:"The Marty McFridays",o:"Khaki Shorts - Graham"},{n:"The Green Room",o:"Khaki Shorts - Kashmir Green"},{n:"The Lavender Lords",o:"Khaki Shorts - Lavender"},{n:"The Second Winds",o:"Khaki Shorts - Light Gray"},{n:"The Coral Horizons",o:"Khaki Shorts - Lobster Red"},{n:"The Burgundy Hours",o:"Khaki Shorts - Maroon"},{n:"The Sidequest",o:"Khaki Shorts - Navy"},{n:"The Splashton Kutchers",o:"Khaki Shorts - Nile Blue"},{n:"The Sunrise Crew",o:"Khaki Shorts - Original Khaki"},{n:"Life's A Peach",o:"Khaki Shorts - Peach"},{n:"The Grape Gatsby",o:"Khaki Shorts - Purple Rose"},{n:"The Burton Boys",o:"Khaki Shorts - Riverside"},{n:"The Irish Exits",o:"Khaki Shorts - Stone"},{n:"The Andy Duffrains",o:"Khaki Shorts - Storm Blue"},{n:"The Punch-a-Chus",o:"Khaki Shorts - Sunlight Yellow"},{n:"The Seafoam Seekers",o:"Khaki Shorts - Surfspray"},{n:"The Old Sports",o:"Khaki Shorts - White"}
+    ],
+    "ElasTech Gym Shorts": [
+      {n:"The Knightriders",o:"Gym Shorts 2.0 - Black"},{n:"The Shortal Kombats",o:"Gym Shorts 2.0 - Black Heather"},{n:"The Gray Area 51s",o:"Gym Shorts 2.0 - Gray"},{n:"The Kung Pow-ers",o:"Gym Shorts 2.0 - Gray Heather"},{n:"The BraveShorts",o:"Gym Shorts 2.0 - Navy"},{n:"The Tae Kwon-Don'ts",o:"Gym Shorts 2.0 - Navy Heather"}
+    ],
+    "Gym Shorts": [
+      {n:"Duffy The Vampire Slayers",o:"Gym Shorts - Black"},{n:"Lunchman Larrys",o:"Gym Shorts - Black Heather"},{n:"The Captain South Americas",o:"Gym Shorts - Blue & Pink Floral"},{n:"The Tightwads",o:"Gym Shorts - Gray & Dark Gray"},{n:"The Zero Dark 30's",o:"Gym Shorts - Gray Camo"},{n:"Coach Cockburns",o:"Gym Shorts - Gray Heather"},{n:"The Deerhunters",o:"Gym Shorts - Green Camo"},{n:"The Billy Budds",o:"Gym Shorts - Navy & White"},{n:"Art Fartknockers",o:"Gym Shorts - Navy Heather"},{n:"The Baysiders",o:"Gym Shorts - Purple & Pink"},{n:"The Red Zones",o:"Gym Shorts - Red"},{n:"The S.S. TD's",o:"Gym Shorts - Red Seersucker"},{n:"The Blue Bloods",o:"Gym Shorts - Royal Blue"},{n:"The Club Whites",o:"Gym Shorts - White"}
+    ],
+    "Lounge Shorts": [
+      {n:"The Buenos Noches",o:"Lounge Shorts - Charcoal Heather"},{n:"The Double Siestas",o:"Lounge Shorts - Oatmeal Heather"},{n:"The Machu Pichus",o:"Lounge Shorts - Stonewash Heather"}
+    ],
+    "Tech Linen Shorts": [
+      {n:"The Amalfi Operators",o:"Tech Linen Shorts - Beige"},{n:"The Summer Weights",o:"Tech Linen Shorts - Navy"},{n:"The John Linens",o:"Tech Linen Shorts - White"}
+    ],
+    "Fancy Khaki Shorts": [
+      {n:"The Bethpage Slacks",o:"Club Shorts - Black"},{n:"The Pine Thirsts",o:"Club Shorts - Carolina Blue"},{n:"The Torrey Reclines",o:"Club Shorts - Dark Gray"},{n:"The Soakmonts",o:"Club Shorts - Khaki"},{n:"The Shinnecock Chills",o:"Club Shorts - Navy"},{n:"The Bandon Dudes",o:"Club Shorts - Sedona Fade"}
+    ],
+    "Canvas Easy Shorts": [
+      {n:"The Morning Debriefs",o:"—"},{n:"The Ditch Plains",o:"—"},{n:"The Navajo Trails",o:"—"},{n:"The Top Bunks",o:"—"},
+      {n:"The Indian Wells",o:"Easy Shorts - Beige"},{n:"The Genghis Khakis",o:"Easy Shorts - Khaki"},{n:"The Long Walk Home",o:"Easy Shorts - Monument Gray"},{n:"The 4:06 Cannonball",o:"Easy Shorts - Navy"},{n:"Maximus Decimus Materialus",o:"Easy Shorts - Navy"}
+    ],
+    "Pants": [
+      {n:"The Shadow Forms",o:"Stretch Khakis - Black"},{n:"The Dark Matters",o:"Stretch Khakis - Dark Gray"},{n:"The Singularities",o:"Stretch Khakis - Gray"},{n:"The Incognitos",o:"Stretch Khakis - Khaki"},{n:"The Neil Leg-Strongs",o:"Stretch Khakis - Light Gray"},{n:"The Leviathan Prime",o:"Stretch Khakis - Dark Charcoal"},{n:"The Laminar Flows",o:"Stretch Khakis - Navy"},{n:"The Fee Farmers",o:"Stretch Khakis - Hunter Green"},{n:"The Buzz All-Grins",o:"Stretch Khakis - Steel Blue"},{n:"The Silent Strikes",o:"Stretch Khakis - Stone"}
+    ],
+    "Flex 5-Pocket Pants": [
+      {n:"Buzzed Gravity",o:"5-Pocket Tech Pants - Black"},{n:"The Shadow Forms",o:"5-Pocket Tech Pants - Black"},{n:"The Empire Sits Back",o:"5-Pocket Tech Pants - Black"},{n:"The Thunder Runs",o:"5-Pocket Tech Pants - Dark Gray"},{n:"The Dark Matters",o:"5-Pocket Tech Pants - Graphite"},{n:"The AeroWeapons",o:"5-Pocket Tech Pants - Gray"},{n:"The Singularities",o:"5-Pocket Tech Pants - Gray"},{n:"The Theta Waves",o:"5-Pocket Tech Pants - Khaki"},{n:"The Slipstreams",o:"5-Pocket Tech Pants - Mocha Gray"},{n:"The Apollowned",o:"5-Pocket Tech Pants - Navy"},{n:"The Laminar Flows",o:"5-Pocket Tech Pants - Navy"},{n:"The Big Lebreathski",o:"5-Pocket Tech Pants - Navy"},{n:"The Gamma Bursts",o:"5-Pocket Tech Pants - Olive"},{n:"The Incognitos",o:"5-Pocket Tech Pants - Sand"},{n:"Houston, We're Comfortable",o:"5-Pocket Tech Pants - Sand"},{n:"The Drift Vectors",o:"5-Pocket Tech Pants - Stone"},{n:"The Silent Strikes",o:"5-Pocket Tech Pants - Stone"}
+    ],
+    "Joggers": [
+      {n:"The Empire Sits Back",o:"Performance Jogger - Black"},{n:"Houston, We're Comfortable",o:"Performance Jogger - Khaki"},{n:"The Chillenium Falcons",o:"Performance Jogger - Navy"}
+    ],
+    "Bathing Suit / Swim Shorts": [
+      {n:"Yachtstock '77",o:"Swim Shorts - Blue & Red Flower"},{n:"The Gentle Gaffers",o:"Swim Shorts - Blue & White"},{n:"The Homer Swimpsons",o:"Swim Shorts - Blue & White Stripe"},{n:"The Soak Hogans",o:"Swim Shorts - Coral"},{n:"The Aegean Ease",o:"Swim Shorts - Delphi Blue"},{n:"The Ibiza Ease",o:"Swim Shorts - Delphi Green"},{n:"James Earl Buoys",o:"Swim Shorts - La Prade's Blue"},{n:"The Good Will Holdings",o:"Swim Shorts - Living Coral"},{n:"The Ted Splashos",o:"Swim Shorts - Navy"},{n:"Mango Unchained",o:"Swim Shorts - Orange"},{n:"The James Ponds",o:"Swim Shorts - Pink"},{n:"The Bart Swimpsons",o:"Swim Shorts - Pink & White"},{n:"The Keanu Reefs",o:"Swim Shorts - Sea Green"},{n:"Nantucket Nector '76",o:"Swim Shorts - Turquoise Flower"}
+    ]
+  },
+  tops: {
+    "Polo": [
+      {n:"The Second Wind",o:"—"},{n:"The Last Call",o:"—"},{n:"The Cold Open",o:"—"},{n:"The Extra Inning",o:"—"},
+      {n:"The Tiger Woulds",o:"Performance Polo - Black Heather"},{n:"The Wind Reader",o:"Performance Polo - Blue & White Fans"},{n:"The Texas Wedge Enthusiast",o:"Performance Polo - Blue Bowtie"},{n:"The Diplomat",o:"Performance Polo - Blue Houndstooth"},{n:"The Turn Father",o:"Performance Polo - Blue Stripe"},{n:"The Cart Barn Celebrity",o:"Performance Polo - Blue Wave"},{n:"The Legend of Bogey Vance",o:"Performance Polo - Dark Green Bowtie"},{n:"The Clubhouse Fixture",o:"Performance Polo - Gray Bowtie"},{n:"The Hampton Palmers",o:"Performance Polo - Gray Stripe"},{n:"The Gimmie King",o:"Performance Polo - Green Bowtie"},{n:"The Shotgun Prince",o:"Performance Polo - Green Houndstooth"},{n:"The Strappy Gilmore",o:"Performance Polo - Green Stripe"},{n:"The Arnold Palm Squeezer",o:"Performance Polo - Green Topo"},{n:"The 18th & Aperol",o:"Performance Polo - Green Wave"},{n:"The Scottie Stresslers",o:"Performance Polo - Light Blue Heather"},{n:"The Big Lebirdski",o:"Performance Polo - Light Blue Stripe"},{n:"Talk Birdie to Me",o:"Performance Polo - Light Blue Topo"},{n:"The Barack O'Llamas",o:"Performance Polo - Llama Del Mar"},{n:"The Merman",o:"Performance Polo - Merman Print"},{n:"The Lord of the Swings",o:"Performance Polo - Navy"},{n:"The Phil Wagersons",o:"Performance Polo - Navy Heather"},{n:"The Bogey Negotiator",o:"Performance Polo - Navy Houndstooth"},{n:"The Tee & Tea King",o:"Performance Polo - Navy Topo"},{n:"The Turnfather",o:"Performance Polo - Navy Wave"},{n:"Jabba the Putt",o:"Performance Polo - Navy/Carolina Bowtie"},{n:"The Jon Daily",o:"Performance Polo - Oatmeal Bowtie"},{n:"The Shankapotomus",o:"Performance Polo - Orange Stripe"},{n:"The Nine & Wine Crew",o:"Performance Polo - Orange Wave"},{n:"The Post Round Pilsner",o:"Performance Polo - Pink Bowtie"},{n:"Mulligan's Island",o:"Performance Polo - Purple Bowtie"},{n:"The Dusty Johnson",o:"Performance Polo - Purple Stripe"},{n:"The Cart Cooler Captain",o:"Performance Polo - Purple Wave"},{n:"The Grip & Ripmore",o:"Performance Polo - Red/White/Blue Bowtie"},{n:"The Caddy Smacks",o:"Performance Polo - Teal Fans"},{n:"The Baby Fades",o:"Performance Polo - White"}
+    ],
+    "Quarter Zip": [
+      {n:"The Geronimo",o:"Quarter Zip - Beige Heather"},{n:"The Nightwalk",o:"Quarter Zip - Black"},{n:"The Last Drag",o:"Quarter Zip - Cold Ash Heather"},{n:"The Rooster Cogburns",o:"Quarter Zip - Coral Heather"},{n:"The Curtain Call",o:"Quarter Zip - Faded Blue"},{n:"The Maverick",o:"Quarter Zip - Gray"},{n:"The Roadie",o:"Quarter Zip - Light Blue Heather"},{n:"The Alamo",o:"Quarter Zip - Light Gray Heather"},{n:"The Kingmaker",o:"Quarter Zip - Merlot Heather"},{n:"The Last Guy Up",o:"Quarter Zip - Midnight Static Heather"},{n:"The Lone Ranger",o:"Quarter Zip - Navy"},{n:"The Midnight Rambler",o:"Quarter Zip - Navy Heather"},{n:"The One More Round",o:"Quarter Zip - Stonewash Heather"},{n:"The Drifter",o:"Quarter Zip - Teal Heather"}
+    ],
+    "Lightweight Hoodies": [
+      {n:"The Dawn Watch",o:"SuperSoft Hoodie - Black"},{n:"The Clubhouse Coffee",o:"SuperSoft Hoodie - Brown Heather"},{n:"The Range Smoke",o:"SuperSoft Hoodie - Charcoal Heather"},{n:"The Daylight Review",o:"SuperSoft Hoodie - Light Blue Heather"},{n:"The Fairway Fog",o:"SuperSoft Hoodie - Light Gray Heather"},{n:"The Last Call Cabernets",o:"SuperSoft Hoodie - Maroon Heather"},{n:"The Breakwater",o:"SuperSoft Hoodie - Navy"},{n:"The Sunrise Session",o:"SuperSoft Hoodie - Oatmeal Heather"},{n:"The First Pour",o:"SuperSoft Hoodie - Stonewash Heather"}
+    ],
+    "SuperSoft Tees": [
+      {n:"The Flu Game",o:"Supersoft Tee - Black"},{n:"The One More Round",o:"Supersoft Tee - Black Heather"},{n:"The Dean Dome",o:"Supersoft Tee - Blue Heather"},{n:"The Mud Bowl",o:"Supersoft Tee - Brown Heather"},{n:"The Fullback Dive",o:"Supersoft Tee - Charcoal Heather"},{n:"The Coral Comeback",o:"Supersoft Tee - Coral Heather"},{n:"The Hold The Line",o:"Supersoft Tee - Cranberry Heather"},{n:"The No Day Off",o:"Supersoft Tee - Gray Heather"},{n:"The Three-Peat Pending",o:"Supersoft Tee - Light Blue Heather"},{n:"The On To Cincinnati",o:"Supersoft Tee - Light Gray Heather"},{n:"The Oklahoma Drill",o:"Supersoft Tee - Maroon Heather"},{n:"The Mega Pint of Wine",o:"Supersoft Tee - Merlot Heather"},{n:"The Keep It On",o:"Supersoft Tee - Navy"},{n:"The Cinderella Run",o:"Supersoft Tee - Navy Heather"},{n:"The Never Left",o:"Supersoft Tee - Stonewash Heather"},{n:"Steve Balmer Windows '95",o:"Supersoft Tee - Teal Heather"},{n:"The Unbenchable",o:"Supersoft Tee - White"}
+    ]
+  }
+};
+
+// ── TABS ──────────────────────────────────────────────────
+function showTab(id, btn) {
+  ['aiTab','browseTab'].forEach(t => document.getElementById(t).classList.add('hidden'));
+  document.getElementById(id+'Tab').classList.remove('hidden');
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (id === 'browse') { currentSection = 'bottoms'; currentType = null; renderTypeBar(); renderGrid(); }
+}
+
+// ── BROWSE ────────────────────────────────────────────────
+let currentSection = 'bottoms';
+let currentType = null;
+
+function setSection(s, btn) {
+  currentSection = s;
+  currentType = null;
+  document.querySelectorAll('.section-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTypeBar();
+  renderGrid();
+}
+
+function renderTypeBar() {
+  const types = Object.keys(DB[currentSection]);
+  document.getElementById('typeBar').innerHTML = types.map(t =>
+    `<button class="type-btn${currentType===t?' active':''}" onclick="setType('${t}',this)">${t}</button>`
+  ).join('');
+}
+
+function setType(t, btn) {
+  currentType = currentType === t ? null : t;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  if (currentType) btn.classList.add('active');
+  renderGrid();
+}
+
+function renderGrid() {
+  const section = DB[currentSection];
+  const types = currentType ? [currentType] : Object.keys(section);
+  let html = '';
+  types.forEach(type => {
+    section[type].forEach(item => {
+      html += `<div class="grid-row">
+        <span class="g-type">${type}</span>
+        <span class="g-new">${item.n}</span>
+        <span class="g-old">${item.o === '—' ? 'new style' : item.o}</span>
+      </div>`;
+    });
+  });
+  document.getElementById('gridBody').innerHTML = html || '<div class="no-results">Nothing found!</div>';
+}
+
+// ── AI CHAT ───────────────────────────────────────────────
+let hist = [];
+function addMsg(html, cls) {
+  const d = document.createElement('div');
+  d.className = 'msg ' + cls;
+  d.innerHTML = html;
+  document.getElementById('msgs').appendChild(d);
+  document.getElementById('msgs').scrollTop = 99999;
+  return d;
+}
+function ask(t) { document.getElementById('inp').value = t; send(); }
+async function send() {
+  const t = document.getElementById('inp').value.trim();
+  if (!t) return;
+  document.getElementById('inp').value = '';
+  document.getElementById('btn').disabled = true;
+  addMsg(t, 'user');
+  hist.push({ role: 'user', content: t });
+  const loader = addMsg('looking it up...', 'loading');
+  try {
+    const r = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: hist })
+    });
+    const data = await r.json();
+    if (data.error) throw new Error(data.error);
+    loader.remove();
+    addMsg(data.reply.replace(/\n/g,'<br>'), 'bot');
+    hist.push({ role: 'assistant', content: data.reply });
+  } catch(e) {
+    loader.remove();
+    addMsg('Error: ' + e.message, 'err');
+  }
+  document.getElementById('btn').disabled = false;
+  document.getElementById('inp').focus();
+}
+document.getElementById('inp').addEventListener('keydown', e => { if(e.key==='Enter') send(); });
+</script>
+</body>
+</html>
